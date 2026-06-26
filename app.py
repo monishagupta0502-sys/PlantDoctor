@@ -156,30 +156,41 @@ Upload a plant leaf image to detect diseases instantly using Artificial Intellig
 # ============================================================
 
 st.markdown("""
-# 🌿 PlantDoctor AI
+<div style="
+padding:35px;
+background:#F8FFF8;
+border:2px solid #A5D6A7;
+border-radius:20px;
+box-shadow:0px 10px 25px rgba(0,0,0,0.08);
+text-align:center;
+">
 
-### Smart Plant Disease Detection using Deep Learning
-""")
+<h1 style="color:#1B5E20;margin-bottom:10px;">
+🌿 PlantDoctor AI
+</h1>
 
-st.write(
-"""
-PlantDoctor AI helps farmers and researchers identify plant diseases using an AI model trained on the PlantVillage dataset.
+<h3 style="color:#2E7D32;">
+Deep Learning Powered Plant Disease Detection
+</h3>
 
-Upload a clear image of a plant leaf and receive:
+<p style="color:#4CAF50;font-size:18px;">
+Upload • Analyze • Diagnose • Treat
+</p>
 
-✅ Disease Prediction
+</div>
+""", unsafe_allow_html=True)
 
-✅ Confidence Score
+st.write("")
 
-✅ Treatment
+metric1, metric2, metric3, metric4 = st.columns(4)
 
-✅ Prevention
-
-✅ Severity Level
-"""
-)
+metric1.metric("🎯 Accuracy", "92.14%")
+metric2.metric("🦠 Diseases", "38")
+metric3.metric("🤖 Framework", "TensorFlow")
+metric4.metric("🧠 Model", "MobileNetV2")
 
 st.divider()
+
 # ============================================================
 # MAIN LAYOUT
 # ============================================================
@@ -247,68 +258,76 @@ with right_col:
 
         disease_name = disease.split("___")[1].replace("_", " ")
 
-        st.success("Prediction Completed Successfully")
+st.success("✅ Prediction Completed")
 
-        st.metric(
-            "Prediction Time",
-            f"{prediction_time:.2f} sec"
-        )
+st.metric(
+    "⏱ Prediction Time",
+    f"{prediction_time:.2f} sec"
+)
 
-        st.markdown("### 🌱 Plant")
+card1, card2, card3 = st.columns(3)
 
-        st.success(plant)
+with card1:
 
-        st.markdown("### 🦠 Disease")
+    st.markdown(f"""
+<div class="card">
+<h3>🌱 Plant</h3>
+<h2>{plant}</h2>
+</div>
+""", unsafe_allow_html=True)
 
-        st.error(disease_name)
+with card2:
 
-        st.markdown("### 🎯 Confidence")
+    st.markdown(f"""
+<div class="card">
+<h3>🦠 Disease</h3>
+<h2>{disease_name}</h2>
+</div>
+""", unsafe_allow_html=True)
 
-        st.progress(float(confidence))
+with card3:
 
-        st.write(
-            f"### {confidence*100:.2f}%"
-        )
+    st.markdown(f"""
+<div class="card">
+<h3>🎯 Confidence</h3>
+<h1>{confidence*100:.2f}%</h1>
+</div>
+""", unsafe_allow_html=True)
 
-        st.divider()
+st.progress(float(confidence))
 
-        st.markdown("## 🏆 Top 3 Predictions")
+st.divider()
 
-        medals = [
+st.markdown("## 🏆 Top 3 Predictions")
+
+medals = [
             "🥇",
             "🥈",
             "🥉"
         ]
+st.markdown("## 🏆 Top Predictions")
 
-        for i, idx in enumerate(top3):
+medals = ["🥇", "🥈", "🥉"]
 
-            probability = float(prediction[idx])
+for i, idx in enumerate(top3):
 
-            class_name = class_names[idx]
+    probability = float(prediction[idx])
 
-            class_name = class_name.replace(
-                "___",
-                " → "
-            )
+    disease_label = (
+        class_names[idx]
+        .replace("___", " → ")
+        .replace("_", " ")
+    )
 
-            class_name = class_name.replace(
-                "_",
-                " "
-            )
+    st.markdown(f"### {medals[i]} {disease_label}")
 
-            st.write(
-                f"{medals[i]} **{class_name}**"
-            )
+    st.progress(probability)
 
-            st.progress(probability)
+    st.caption(f"{probability*100:.2f}% Confidence")
 
-            st.caption(
-                f"{probability*100:.2f}%"
-            )
+st.divider()
 
-        st.divider()
-
-        info = DISEASE_INFO.get(
+info = DISEASE_INFO.get(
             disease,
             {
                 "description":"Information unavailable.",
@@ -318,128 +337,101 @@ with right_col:
                 "severity":"Unknown"
             }
         )
-        # ============================================================
+# ============================================================
 # DISEASE INFORMATION
 # ============================================================
 
-        st.markdown("## 📖 Disease Information")
+st.markdown("## 📖 Disease Information")
 
-        st.markdown("### 📝 Description")
+col1, col2 = st.columns(2)
 
-        st.write(info["description"])
+with col1:
 
-        st.markdown("---")
+    st.markdown(f"""
+<div class="card">
+<h3>📝 Description</h3>
+<p>{info["description"]}</p>
+</div>
+""", unsafe_allow_html=True)
 
-        st.markdown("### 🔍 Symptoms")
+    st.markdown(f"""
+<div class="card">
+<h3>🔍 Symptoms</h3>
+<p>{info["symptoms"]}</p>
+</div>
+""", unsafe_allow_html=True)
 
-        st.info(info["symptoms"])
+with col2:
 
-        st.markdown("---")
+    st.markdown(f"""
+<div class="card">
+<h3>💊 Treatment</h3>
+<p>{info["treatment"]}</p>
+</div>
+""", unsafe_allow_html=True)
 
-        st.markdown("### 💊 Recommended Treatment")
-
-        st.success(info["treatment"])
-
-        st.markdown("---")
-
-        st.markdown("### 🛡 Prevention")
-
-        st.warning(info["prevention"])
-
-        st.markdown("---")
-
-        st.markdown("### ⚠ Disease Severity")
-
-        severity = info.get("severity", "Unknown")
-
-        if severity.lower() == "low":
-
-            st.success("🟢 Low Severity")
-
-        elif severity.lower() == "medium":
-
-            st.warning("🟠 Medium Severity")
-
-        elif severity.lower() == "high":
-
-            st.error("🔴 High Severity")
-
-        else:
-
-            st.info("⚪ Unknown")
+    st.markdown(f"""
+<div class="card">
+<h3>🛡 Prevention</h3>
+<p>{info["prevention"]}</p>
+</div>
+""", unsafe_allow_html=True)
 
 # ============================================================
 # PLANT STATUS
 # ============================================================
 
-        st.markdown("---")
+st.markdown("---")
 
-        st.markdown("## 🌱 Plant Health Status")
+st.markdown("## 🌱 Plant Health Status")
 
-        if "healthy" in disease.lower():
+st.markdown("## 🌱 Plant Status")
 
-            st.success(
-                """
-### ✅ Healthy Plant
+if "healthy" in disease.lower():
 
-Your plant appears to be healthy.
+    st.success("✅ Healthy Plant")
 
-Continue following good agricultural practices.
-"""
-            )
+else:
 
-        else:
+    st.error("🦠 Disease Detected")
 
-            st.error(
-                """
-### 🦠 Disease Detected
-
-The uploaded plant appears to be infected.
-
-Please follow the recommended treatment and prevention methods shown above.
-"""
-            )
-
+st.caption("This result is generated by the trained AI model.")
 # ============================================================
 # MODEL INFORMATION
 # ============================================================
 
-        st.markdown("---")
+st.markdown("## ⚠ Disease Severity")
 
-        st.markdown("## 🤖 AI Model Details")
+severity = info.get("severity", "Unknown")
 
-        col1, col2 = st.columns(2)
+colors = {
+    "Low": "#43A047",
+    "Medium": "#FB8C00",
+    "High": "#E53935"
+}
 
-        with col1:
+color = colors.get(severity, "#757575")
 
-            st.metric(
-                "Framework",
-                "TensorFlow"
-            )
-
-            st.metric(
-                "Architecture",
-                "MobileNetV2"
-            )
-
-        with col2:
-
-            st.metric(
-                "Classes",
-                "38"
-            )
-
-            st.metric(
-                "Validation Accuracy",
-                "92.14%"
-            )
-
-        st.markdown("---")
-        # ============================================================
+st.markdown(
+    f"""
+<div style="
+padding:20px;
+border-radius:15px;
+background:{color};
+color:white;
+text-align:center;
+font-size:24px;
+font-weight:bold;">
+{severity} Severity
+</div>
+""",
+    unsafe_allow_html=True
+)
+# ============================================================
 # DOWNLOAD DIAGNOSIS REPORT
 # ============================================================
 
-        report = f"""
+report = f"""
 =========================================================
                 PlantDoctor AI Report
 =========================================================
@@ -498,7 +490,7 @@ Generated by PlantDoctor AI
 =========================================================
 """
 
-        st.download_button(
+st.download_button(
             label="📄 Download Diagnosis Report",
             data=report,
             file_name=f"{plant}_{disease_name}_Report.txt",
@@ -509,23 +501,23 @@ Generated by PlantDoctor AI
 # CONFIDENCE ANALYSIS
 # ============================================================
 
-        st.markdown("---")
+st.markdown("---")
 
-        st.markdown("## 📊 Confidence Analysis")
+st.markdown("## 📊 Confidence Analysis")
 
-        if confidence >= 0.95:
+if confidence >= 0.95:
 
             st.success(
                 "✅ Excellent prediction confidence."
             )
 
-        elif confidence >= 0.80:
+elif confidence >= 0.80:
 
             st.success(
                 "✅ High confidence prediction."
             )
 
-        elif confidence >= 0.60:
+elif confidence >= 0.60:
 
             st.warning(
                 """
@@ -535,7 +527,7 @@ Try uploading a clearer image for improved accuracy.
 """
             )
 
-        else:
+else:
 
             st.error(
                 """
@@ -549,11 +541,11 @@ The image may be blurry or outside the training dataset.
 # AI RECOMMENDATION
 # ============================================================
 
-        st.markdown("---")
+st.markdown("---")
 
-        st.markdown("## 🤖 AI Recommendation")
+st.markdown("## 🤖 AI Recommendation")
 
-        if "healthy" in disease.lower():
+if "healthy" in disease.lower():
 
             st.success(
                 """
@@ -564,7 +556,6 @@ balanced fertilization and periodic monitoring.
 """
             )
 
-        else:
 
             st.info(
                 """
