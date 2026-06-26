@@ -3,148 +3,131 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 import json
+import os
+
 from disease_info import DISEASE_INFO
 
-# -----------------------------------
+# ----------------------------------------------------
 # PAGE CONFIG
-# -----------------------------------
+# ----------------------------------------------------
 
 st.set_page_config(
-    page_title="Plant Disease Detection",
+    page_title="PlantDoctor AI",
     page_icon="🌿",
-    layout="centered"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# -----------------------------------
-# CUSTOM CSS
-# -----------------------------------
+# ----------------------------------------------------
+# LOAD CSS
+# ----------------------------------------------------
 
-st.markdown("""
-<style>
+def load_css():
+    if os.path.exists("style.css"):
+        with open("style.css") as f:
+            st.markdown(
+                f"<style>{f.read()}</style>",
+                unsafe_allow_html=True
+            )
 
-.main {
-    padding-top: 1rem;
-}
+load_css()
 
-.big-title{
-    text-align:center;
-    color:#2E8B57;
-    font-size:42px;
-    font-weight:bold;
-}
-
-.subtitle{
-    text-align:center;
-    font-size:18px;
-    color:gray;
-}
-
-.result-box{
-    background-color:#F0FFF4;
-    padding:20px;
-    border-radius:12px;
-    border:2px solid #2E8B57;
-}
-
-.footer{
-    text-align:center;
-    color:gray;
-    font-size:14px;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# -----------------------------------
+# ----------------------------------------------------
 # SIDEBAR
-# -----------------------------------
+# ----------------------------------------------------
 
-st.sidebar.title("🌿 Plant Disease AI")
+with st.sidebar:
 
-st.sidebar.success("Model Accuracy: 92.14%")
+    st.image(
+        "https://cdn-icons-png.flaticon.com/512/2909/2909768.png",
+        width=120
+    )
 
-st.sidebar.markdown("---")
+    st.title("🌿 PlantDoctor AI")
 
-st.sidebar.write("### 🧠 Model")
-st.sidebar.write("MobileNetV2")
+    st.markdown("---")
 
-st.sidebar.write("### 📊 Dataset")
-st.sidebar.write("PlantVillage")
+    st.success("Model Loaded")
 
-st.sidebar.write("### 🌱 Classes")
-st.sidebar.write("38 Plant Diseases")
+    st.metric("Accuracy", "92.14%")
 
-st.sidebar.markdown("---")
+    st.metric("Classes", "38")
 
-st.sidebar.write("Developed by")
-st.sidebar.write("**Monisha** ❤️")
+    st.metric("Framework", "TensorFlow")
 
-# -----------------------------------
-# TITLE
-# -----------------------------------
+    st.metric("Architecture", "MobileNetV2")
 
-st.markdown(
-    "<div class='big-title'>🌿 Plant Disease Detection</div>",
-    unsafe_allow_html=True
-)
+    st.markdown("---")
 
-st.markdown(
-    "<div class='subtitle'>Upload a leaf image and let AI identify the disease.</div>",
-    unsafe_allow_html=True
-)
+    st.markdown(
+        """
+### About
 
-# -----------------------------------
-# ABOUT
-# -----------------------------------
+PlantDoctor AI is a Deep Learning based plant disease
+identification system trained on the PlantVillage dataset.
 
-with st.expander("ℹ️ About this Project"):
+Simply upload a leaf image and the AI will identify:
 
-    st.write("""
-This application uses **Deep Learning** to identify diseases in plant leaves.
+✅ Plant
 
-### Features
+✅ Disease
 
-✅ Detects **38 plant diseases**
-
-✅ MobileNetV2 CNN
-
-✅ Top-5 Predictions
-
-✅ Confidence Score
-
-✅ Disease Description
-
-✅ Symptoms
+✅ Confidence
 
 ✅ Treatment
 
 ✅ Prevention
 
-Dataset: **PlantVillage**
-""")
+✅ Severity
+"""
+    )
 
-# -----------------------------------
+    st.markdown("---")
+
+    st.info(
+        "Developed using Streamlit + TensorFlow"
+    )
+
+# ----------------------------------------------------
+# TITLE
+# ----------------------------------------------------
+
+st.markdown(
+    """
+# 🌿 PlantDoctor AI
+
+### Intelligent Plant Disease Detection System
+
+Upload a clear leaf image and let AI identify the disease instantly.
+"""
+)
+
+st.markdown("---")
+
+# ----------------------------------------------------
 # LOAD MODEL
-# -----------------------------------
+# ----------------------------------------------------
 
 @st.cache_resource
 def load_model():
+
     return tf.keras.models.load_model(
         "best_plant_disease_model.keras"
     )
 
 model = load_model()
 
-# -----------------------------------
+# ----------------------------------------------------
 # LOAD CLASS NAMES
-# -----------------------------------
+# ----------------------------------------------------
 
-with open("class_names.json","r") as f:
+with open("class_names.json", "r") as f:
+
     class_names = json.load(f)
 
-# -----------------------------------
+# ----------------------------------------------------
 # IMAGE PREPROCESSING
-# -----------------------------------
+# ----------------------------------------------------
 
 def preprocess_image(image):
 
@@ -158,10 +141,9 @@ def preprocess_image(image):
 
     image = image / 255.0
 
-    image = np.expand_dims(image,axis=0)
+    image = np.expand_dims(image, axis=0)
 
     return image
-
 # -----------------------------------
 # FILE UPLOADER
 # -----------------------------------
