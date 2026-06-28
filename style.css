@@ -10,6 +10,25 @@ body,
 [class*="css"]{
 
     font-family:'Poppins',sans-serif;
+    :root{
+
+    --primary:#145A32;
+
+    --secondary:#1E8449;
+
+    --accent:#2E8B57;
+
+    --light:#E8F5E9;
+
+    --background:#F8FFF8;
+
+    --text:#196F3D;
+
+    --border:#B7E4C7;
+
+    --shadow:rgba(46,125,50,.15);
+
+}
 
 }
 
@@ -21,12 +40,14 @@ BACKGROUND
 
     background:linear-gradient(
         135deg,
-        #edfdf3,
-        #dff6e5,
-        #c7efd6
+        var(--background),
+        #EDFDF3,
+        var(--light)
     );
 
 }
+
+
 
 /* ===========================================================
 MAIN CONTAINER
@@ -52,15 +73,18 @@ h1{
 
     color:#116530;
 
+
     font-weight:700;
 
     font-size:3rem;
+
+    color:var(--primary);
 
 }
 
 h2{
 
-    color:#1B5E20;
+    color:var(--secondary);
 
     font-weight:600;
 
@@ -68,7 +92,7 @@ h2{
 
 h3{
 
-    color:#2E7D32;
+    color:var(--accent);
 
     font-weight:600;
 
@@ -82,9 +106,13 @@ p{
 
     font-size:17px;
 
+
     color:#333333;
 
+
     line-height:1.7;
+
+    color:var(--text);
 
 }
 /* ===========================================================
@@ -100,13 +128,59 @@ section[data-testid="stSidebar"]{
         #2E8B57
     );
 
+
     color:rgb(30, 24, 24);
+
 
 }
 
+/* Default sidebar text */
+
 section[data-testid="stSidebar"] *{
 
-    color:white !important;
+    color:white;
+
+}
+
+/* Sidebar metric cards */
+
+section[data-testid="stSidebar"] div[data-testid="stMetric"]{
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:15px;
+
+    border-left:5px solid #28A745;
+
+}
+
+/* Sidebar metric label */
+
+section[data-testid="stSidebar"] div[data-testid="stMetric"] label{
+
+    color:#1B5E20 !important;
+
+    font-weight:700;
+
+}
+
+/* Sidebar metric value */
+
+section[data-testid="stSidebar"] div[data-testid="stMetricValue"]{
+
+    color:#1B5E20 !important;
+
+    font-size:32px;
+
+    font-weight:700;
+
+}
+
+section[data-testid="stSidebar"] div[data-testid="stMetric"] *{
+
+    color:#1B5E20 !important;
 
 }
 
@@ -116,7 +190,7 @@ METRIC CARDS
 
 div[data-testid="stMetric"]{
 
-    background:white;
+    background:#F8FFF8;
 
     border-radius:18px;
 
@@ -129,6 +203,31 @@ div[data-testid="stMetric"]{
     transition:0.3s;
 
     margin-bottom:15px;
+
+    border:2px solid #B7E4C7;
+
+    border:2px solid var(--border);
+
+}
+/* Metric Label */
+
+div[data-testid="stMetric"] label{
+
+    color:#1B5E20 !important;
+
+    font-weight:700 !important;
+
+}
+
+/* Metric Value */
+
+div[data-testid="stMetric"] div[data-testid="stMetricValue"]{
+
+    color:#1B5E20 !important;
+
+    font-weight:700 !important;
+
+    font-size:34px !important;
 
 }
 
@@ -146,7 +245,7 @@ BUTTONS
 
 .stButton>button{
 
-    background:#198754;
+    background:var(--accent);
 
     color:white;
 
@@ -166,7 +265,7 @@ BUTTONS
 
 .stButton>button:hover{
 
-    background:#146C43;
+    background:var(--primary);
 
     transform:scale(1.05);
 
@@ -415,37 +514,111 @@ FOOTER
     color:#2E7D32;
 
 }
+/* ===========================================================
+SECTION TITLES
+=========================================================== */
 
+.section-title{
+
+    background:linear-gradient(
+        90deg,
+        #145A32,
+        #1E8449
+    );
+
+    color:white;
+
+    padding:15px;
+
+    border-radius:15px;
+
+    font-size:24px;
+
+    font-weight:600;
+
+    margin-bottom:20px;
+
+    text-align:center;
+
+    box-shadow:0px 8px 20px rgba(20,90,50,.18);
+
+}
 /* ===========================================================
 CUSTOM CARDS
 =========================================================== */
 
 .card{
 
-    background:rgba(255,255,255,0.80);
+    background:linear-gradient(
+        145deg,
+        white,
+        #F6FFF7
+    );
 
-    border-radius:20px;
+    border:2px solid var(--border);
 
-    padding:20px;
+    border-left:8px solid var(--accent);
 
-    margin-top:15px;
+    border-radius:22px;
 
-    margin-bottom:15px;
+    padding:24px;
 
-    box-shadow:0px 8px 20px rgba(0,0,0,0.10);
+    margin:18px 0;
 
-    transition:0.3s;
+    box-shadow:0px 10px 25px var(--shadow);
+
+    transition:.35s ease;
 
 }
 
 .card:hover{
 
-    transform:translateY(-5px);
+    transform:translateY(-6px);
 
-    box-shadow:0px 12px 30px rgba(0,0,0,0.15);
+    box-shadow:0px 18px 35px rgba(20,90,50,.20);
 
 }
 
+.card h1{
+
+    color:var(--primary);
+
+}
+
+.card h2{
+
+    color:#145A32;
+
+    font-size:30px;
+
+    font-weight:700;
+
+    margin-bottom:10px;
+
+}
+
+
+.card h3{
+
+    color:#2E8B57;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    letter-spacing:2px;
+
+    text-transform:uppercase;
+
+    margin-bottom:18px;
+
+}
+
+.card p{
+
+    color:var(--text);
+
+}
 /* ===========================================================
 RESPONSIVE DESIGN
 =========================================================== */
@@ -537,3 +710,36 @@ a:hover{
 /* ===========================================================
 END OF CSS
 =========================================================== */
+/* ===========================================================
+LOGIN PAGE
+=========================================================== */
+
+.stTabs{
+
+    border-radius:20px;
+
+}
+
+.stTextInput>div>div>input{
+
+    border-radius:12px;
+
+    border:2px solid #B7E4C7;
+
+    padding:12px;
+
+}
+
+.stTextInput>div>div>input:focus{
+
+    border:2px solid #1E8449;
+
+}
+
+.stTabs [data-baseweb="tab"]{
+
+    font-size:18px;
+
+    font-weight:600;
+
+}

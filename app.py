@@ -5,9 +5,16 @@ from PIL import Image
 import json
 import os
 import time
+from utils.pdf_report import generate_pdf
+from utils.weather import (
+    CITY_COORDINATES,
+    get_weather,
+    weather_advice
+)
 from datetime import datetime
 
 from disease_info import DISEASE_INFO
+from utils.auth import create_database, save_scan
 
 # ============================================================
 # PAGE CONFIG
@@ -21,21 +28,27 @@ st.set_page_config(
 )
 
 # ============================================================
+# CREATE DATABASE
+# ============================================================
+
+create_database()
+
+# ============================================================
 # LOAD CSS
 # ============================================================
 
 def load_css():
 
-    if os.path.exists("style.css"):
+ if os.path.exists("style.css"):
 
-        with open("style.css") as css:
+    with open("style.css") as css:
 
-            st.markdown(
-                f"<style>{css.read()}</style>",
-                unsafe_allow_html=True
-            )
-
+        st.markdown(
+            f"<style>{css.read()}</style>",
+            unsafe_allow_html=True
+        )
 load_css()
+
 
 # ============================================================
 # LOAD MODEL
@@ -44,11 +57,11 @@ load_css()
 @st.cache_resource
 def load_model():
 
-    model = tf.keras.models.load_model(
-        "best_plant_disease_model.keras"
+    return tf.keras.models.load_model(
+        "models/best_plant_disease_model.keras"
     )
 
-    return model
+
 
 model = load_model()
 
@@ -56,7 +69,7 @@ model = load_model()
 # LOAD CLASS NAMES
 # ============================================================
 
-with open("class_names.json","r") as f:
+with open("models/class_names.json", "r") as f:
 
     class_names = json.load(f)
 
@@ -70,15 +83,14 @@ def preprocess_image(image):
 
     image = image.resize((224,224))
 
-    image = np.array(image)
+    image = np.array(image).astype(np.float32)
 
-    image = image.astype(np.float32)
+    image /= 255.0
 
-    image = image / 255.0
-
-    image = np.expand_dims(image,axis=0)
+    image = np.expand_dims(image, axis=0)
 
     return image
+
 
 # ============================================================
 # PREDICTION
@@ -93,16 +105,15 @@ def predict(image):
         verbose=0
     )[0]
 
-    predicted_index = np.argmax(prediction)
+    index = np.argmax(prediction)
 
-    confidence = prediction[predicted_index]
+    confidence = float(prediction[index])
 
-    disease = class_names[predicted_index]
+    disease = class_names[index]
 
     top3 = np.argsort(prediction)[::-1][:3]
 
-    return disease,confidence,prediction,top3
-
+    return disease, confidence, prediction, top3
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -111,31 +122,14 @@ with st.sidebar:
 
     st.title("🌿 PlantDoctor AI")
 
-    st.markdown(
-        "### Deep Learning Powered Plant Disease Detection"
-    )
+    st.markdown("### Deep Learning Powered Plant Disease Detection")
 
     st.divider()
 
-    st.metric(
-        "Model Accuracy",
-        "92.14%"
-    )
-
-    st.metric(
-        "Dataset Classes",
-        "38"
-    )
-
-    st.metric(
-        "Framework",
-        "TensorFlow"
-    )
-
-    st.metric(
-        "Architecture",
-        "MobileNetV2"
-    )
+    st.metric("🎯 Model Accuracy", "92.14%")
+    st.metric("🦠 Disease Classes", "38")
+    st.metric("🤖 Framework", "TensorFlow")
+    st.metric("🧠 Model", "MobileNetV2")
 
     st.divider()
 
@@ -143,13 +137,16 @@ with st.sidebar:
 
     st.info(
         """
-Upload a plant leaf image to detect diseases instantly using Artificial Intelligence.
+Upload a clear plant leaf image.
+
+The AI will detect diseases and provide treatment recommendations.
 """
     )
 
     st.divider()
 
     st.caption("Version 2.0")
+
 
 # ============================================================
 # HEADER
@@ -165,7 +162,7 @@ box-shadow:0px 10px 25px rgba(0,0,0,0.08);
 text-align:center;
 ">
 
-<h1 style="color:#1B5E20;margin-bottom:10px;">
+<h1 style="color:#1B5E20;">
 🌿 PlantDoctor AI
 </h1>
 
@@ -182,29 +179,37 @@ Upload • Analyze • Diagnose • Treat
 
 st.write("")
 
-metric1, metric2, metric3, metric4 = st.columns(4)
+m1, m2, m3, m4 = st.columns(4)
 
-metric1.metric("🎯 Accuracy", "92.14%")
-metric2.metric("🦠 Diseases", "38")
-metric3.metric("🤖 Framework", "TensorFlow")
-metric4.metric("🧠 Model", "MobileNetV2")
+m1.metric("🎯 Accuracy", "92.14%")
+m2.metric("🦠 Diseases", "38")
+m3.metric("🤖 Framework", "TensorFlow")
+m4.metric("🧠 Model", "MobileNetV2")
 
 st.divider()
+
 
 # ============================================================
 # MAIN LAYOUT
 # ============================================================
 
-left_col, right_col = st.columns([1, 1.25], gap="large")
+left, right = st.columns([1, 1.25], gap="large")
 
-with left_col:
+
+# ============================================================
+# LEFT COLUMN
+# ============================================================
+
+with left:
 
     st.markdown("## 📤 Upload Leaf Image")
 
     uploaded_file = st.file_uploader(
-        "Supported formats: JPG, JPEG, PNG",
+        "Choose a leaf image",
         type=["jpg", "jpeg", "png"]
     )
+
+    image = None
 
     if uploaded_file is not None:
 
@@ -216,346 +221,242 @@ with left_col:
             use_container_width=True
         )
 
-        st.markdown("---")
+        st.info(
+            """
+### 📌 Tips
 
-        st.info("""
-### 📌 Tips for Best Prediction
+• Upload one leaf
 
-• Upload one leaf only
-
-• Use a plain background
-
-• Ensure good lighting
+• Use good lighting
 
 • Avoid blurry images
 
-• Keep the leaf centered
-""")
+• Plain background gives best results
+"""
+        )
 
-with right_col:
+
+# ============================================================
+# RIGHT COLUMN
+# ============================================================
+
+with right:
 
     st.markdown("## 🤖 AI Diagnosis")
+# ============================================================
+# AI PREDICTION
+# ============================================================
+
+with right:
 
     if uploaded_file is None:
 
-        st.warning(
-            "Please upload a leaf image to begin prediction."
-        )
+        st.warning("📤 Upload a leaf image to begin prediction.")
 
     else:
 
-        with st.spinner("Analyzing image using AI..."):
+        with st.spinner("🔍 Analyzing leaf image..."):
 
             start_time = time.time()
 
             disease, confidence, prediction, top3 = predict(image)
 
-            end_time = time.time()
-
-            prediction_time = end_time - start_time
+            prediction_time = time.time() - start_time
 
         plant = disease.split("___")[0].replace("_", " ")
 
         disease_name = disease.split("___")[1].replace("_", " ")
 
-st.success("✅ Prediction Completed")
+        # ============================================================
+        # SAVE LAST PREDICTION FOR AI ASSISTANT
+        # ============================================================
 
-st.metric(
-    "⏱ Prediction Time",
-    f"{prediction_time:.2f} sec"
-)
+        st.session_state["last_disease"] = disease
+        st.session_state["last_plant"] = plant
+        st.session_state["last_disease_name"] = disease_name
+        st.session_state["last_confidence"] = confidence
 
-card1, card2, card3 = st.columns(3)
+        # ============================================================
+        # SAVE SCAN
+        # ============================================================
 
-with card1:
+        if st.session_state.get("logged_in", False):
 
-    st.markdown(f"""
-<div class="card">
-<h3>🌱 Plant</h3>
-<h2>{plant}</h2>
-</div>
-""", unsafe_allow_html=True)
+            save_scan(
 
-with card2:
+                st.session_state["username"],
 
-    st.markdown(f"""
-<div class="card">
-<h3>🦠 Disease</h3>
-<h2>{disease_name}</h2>
-</div>
-""", unsafe_allow_html=True)
+                plant,
 
-with card3:
+                disease_name,
 
-    st.markdown(f"""
-<div class="card">
-<h3>🎯 Confidence</h3>
-<h1>{confidence*100:.2f}%</h1>
-</div>
-""", unsafe_allow_html=True)
+                confidence,
 
-st.progress(float(confidence))
+                prediction_time,
 
-st.divider()
+                datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
-st.markdown("## 🏆 Top 3 Predictions")
+            )
 
-medals = [
-            "🥇",
-            "🥈",
-            "🥉"
-        ]
-st.markdown("## 🏆 Top Predictions")
+        # ============================================================
+        # RESULT
+        # ============================================================
 
-medals = ["🥇", "🥈", "🥉"]
+        st.success("✅ Prediction Complete")
 
-for i, idx in enumerate(top3):
+        st.markdown("### 🌱 Plant")
+        st.success(plant)
 
-    probability = float(prediction[idx])
+        st.markdown("### 🦠 Disease")
+        st.error(disease_name)
 
-    disease_label = (
-        class_names[idx]
-        .replace("___", " → ")
-        .replace("_", " ")
-    )
+        st.markdown("### 🎯 Confidence")
 
-    st.markdown(f"### {medals[i]} {disease_label}")
+        st.progress(confidence)
 
-    st.progress(probability)
+        st.write(f"**{confidence*100:.2f}%**")
 
-    st.caption(f"{probability*100:.2f}% Confidence")
+        st.caption(f"Prediction completed in {prediction_time:.2f} seconds")   
+ # ============================================================
+# TOP 3 PREDICTIONS
+# ============================================================
 
-st.divider()
+        st.divider()
 
-info = DISEASE_INFO.get(
+        st.markdown("## 🏆 Top Predictions")
+
+        medals = ["🥇", "🥈", "🥉"]
+
+        for i, idx in enumerate(top3):
+
+            probability = float(prediction[idx])
+
+            label = (
+                class_names[idx]
+                .replace("___", " → ")
+                .replace("_", " ")
+            )
+
+            st.markdown(f"### {medals[i]} {label}")
+
+            st.progress(probability)
+
+            st.caption(f"{probability*100:.2f}% Confidence") 
+        # ============================================================
+        # DISEASE INFORMATION
+        # ============================================================
+
+        info = DISEASE_INFO.get(
             disease,
             {
-                "description":"Information unavailable.",
-                "symptoms":"-",
-                "treatment":"-",
-                "prevention":"-",
-                "severity":"Unknown"
+                "description": "Information unavailable.",
+                "symptoms": "Not available.",
+                "treatment": "Not available.",
+                "prevention": "Not available.",
+                "severity": "Unknown"
             }
         )
-# ============================================================
-# DISEASE INFORMATION
-# ============================================================
 
-st.markdown("## 📖 Disease Information")
+        st.divider()
 
-col1, col2 = st.columns(2)
+        st.markdown("## 📖 Disease Information")
 
-with col1:
+        c1, c2 = st.columns(2)
 
-    st.markdown(f"""
-<div class="card">
-<h3>📝 Description</h3>
-<p>{info["description"]}</p>
-</div>
-""", unsafe_allow_html=True)
+        with c1:
 
-    st.markdown(f"""
-<div class="card">
-<h3>🔍 Symptoms</h3>
-<p>{info["symptoms"]}</p>
-</div>
-""", unsafe_allow_html=True)
+            st.markdown("### 📝 Description")
+            st.info(info["description"])
 
-with col2:
+            st.markdown("### 🔍 Symptoms")
+            st.info(info["symptoms"])
 
-    st.markdown(f"""
-<div class="card">
-<h3>💊 Treatment</h3>
-<p>{info["treatment"]}</p>
-</div>
-""", unsafe_allow_html=True)
+        with c2:
 
-    st.markdown(f"""
-<div class="card">
-<h3>🛡 Prevention</h3>
-<p>{info["prevention"]}</p>
-</div>
-""", unsafe_allow_html=True)
+            st.markdown("### 💊 Treatment")
+            st.success(info["treatment"])
 
-# ============================================================
-# PLANT STATUS
-# ============================================================
+            st.markdown("### 🛡 Prevention")
+            st.success(info["prevention"])
+        # ============================================================
+        # PLANT STATUS
+        # ============================================================
 
-st.markdown("---")
+        st.divider()
 
-st.markdown("## 🌱 Plant Health Status")
+        st.markdown("## 🌱 Plant Status")
 
-st.markdown("## 🌱 Plant Status")
+        if "healthy" in disease.lower():
 
-if "healthy" in disease.lower():
+            st.success("✅ Healthy Plant")
 
-    st.success("✅ Healthy Plant")
+        else:
 
-else:
+            st.error("🦠 Disease Detected")
 
-    st.error("🦠 Disease Detected")
+        severity = info.get("severity", "Unknown")
 
-st.caption("This result is generated by the trained AI model.")
-# ============================================================
-# MODEL INFORMATION
-# ============================================================
+        color_map = {
+            "Low": "🟢",
+            "Medium": "🟡",
+            "High": "🔴"
+        }
 
-st.markdown("## ⚠ Disease Severity")
-
-severity = info.get("severity", "Unknown")
-
-colors = {
-    "Low": "#43A047",
-    "Medium": "#FB8C00",
-    "High": "#E53935"
-}
-
-color = colors.get(severity, "#757575")
-
-st.markdown(
-    f"""
-<div style="
-padding:20px;
-border-radius:15px;
-background:{color};
-color:white;
-text-align:center;
-font-size:24px;
-font-weight:bold;">
-{severity} Severity
-</div>
-""",
-    unsafe_allow_html=True
-)
-# ============================================================
-# DOWNLOAD DIAGNOSIS REPORT
-# ============================================================
-
-report = f"""
-=========================================================
-                PlantDoctor AI Report
-=========================================================
-
-Date:
-{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}
-
----------------------------------------------------------
-
-Plant:
-{plant}
-
-Disease:
-{disease_name}
-
-Confidence:
-{confidence*100:.2f}%
-
-Prediction Time:
-{prediction_time:.2f} seconds
-
----------------------------------------------------------
-
-Description
-
-{info["description"]}
-
----------------------------------------------------------
-
-Symptoms
-
-{info["symptoms"]}
-
----------------------------------------------------------
-
-Treatment
-
-{info["treatment"]}
-
----------------------------------------------------------
-
-Prevention
-
-{info["prevention"]}
-
----------------------------------------------------------
-
-Severity
-
-{severity}
-
-=========================================================
-
-Generated by PlantDoctor AI
-
-=========================================================
-"""
-
-st.download_button(
-            label="📄 Download Diagnosis Report",
-            data=report,
-            file_name=f"{plant}_{disease_name}_Report.txt",
-            mime="text/plain"
+        st.markdown(
+            f"### Severity: {color_map.get(severity,'⚪')} **{severity}**"
         )
 
-# ============================================================
-# CONFIDENCE ANALYSIS
-# ============================================================
+        # ============================================================
+        # CONFIDENCE ANALYSIS
+        # ============================================================
 
-st.markdown("---")
+        st.divider()
 
-st.markdown("## 📊 Confidence Analysis")
+        st.markdown("## 📊 Confidence Analysis")
 
-if confidence >= 0.95:
+        if confidence >= 0.95:
 
-            st.success(
-                "✅ Excellent prediction confidence."
-            )
+            st.success("Excellent prediction confidence.")
 
-elif confidence >= 0.80:
+        elif confidence >= 0.80:
 
-            st.success(
-                "✅ High confidence prediction."
-            )
+            st.success("High confidence prediction.")
 
-elif confidence >= 0.60:
+        elif confidence >= 0.60:
 
             st.warning(
-                """
-⚠ Moderate confidence.
-
-Try uploading a clearer image for improved accuracy.
-"""
+                "Moderate confidence. Try uploading a clearer image."
             )
 
-else:
+        else:
 
             st.error(
-                """
-❌ Low confidence prediction.
-
-The image may be blurry or outside the training dataset.
-"""
+                "Low confidence prediction. Please try another image."
             )
 
-# ============================================================
-# AI RECOMMENDATION
-# ============================================================
+        # ============================================================
+        # AI RECOMMENDATION
+        # ============================================================
 
-st.markdown("---")
+        st.divider()
 
-st.markdown("## 🤖 AI Recommendation")
+        st.markdown("## 🤖 AI Recommendation")
 
-if "healthy" in disease.lower():
+        if "healthy" in disease.lower():
 
             st.success(
                 """
 🌱 The plant appears healthy.
 
-Continue regular watering,
-balanced fertilization and periodic monitoring.
+• Continue regular watering.
+
+• Maintain balanced fertilization.
+
+• Monitor leaves regularly.
 """
             )
 
+        else:
 
             st.info(
                 """
@@ -568,24 +469,106 @@ balanced fertilization and periodic monitoring.
 ✔ Repeat diagnosis after treatment.
 """
             )
+        # ============================================================
+        # WEATHER INTELLIGENCE
+        # ============================================================
+
+        weather = st.session_state.get("weather", None)
+
+        st.divider()
+
+        st.markdown("## 🌦 Weather Intelligence")
+
+        city = st.selectbox(
+            "📍 Select Your City",
+            list(CITY_COORDINATES.keys())
+        )
+
+        if st.button("Get Weather"):
+
+            latitude, longitude = CITY_COORDINATES[city]
+
+            st.session_state["weather"] = get_weather(latitude, longitude)
+
+            weather = st.session_state["weather"]
+
+            if weather:
+
+                c1, c2, c3 = st.columns(3)
+
+                with c1:
+
+                    st.metric(
+                        "🌡 Temperature",
+                        f"{weather['temperature']} °C"
+                    )
+
+                with c2:
+
+                    st.metric(
+                        "💧 Humidity",
+                        f"{weather['humidity']} %"
+                    )
+
+                with c3:
+
+                    st.metric(
+                        "🍃 Wind",
+                        f"{weather['wind']} km/h"
+                    )
+
+                st.markdown("### 🌱 Smart Farming Advice")
+
+                advice = weather_advice(
+                    weather["humidity"],
+                    disease_name
+                )
+
+                for tip in advice:
+
+                    st.success(tip)
+
+            else:
+
+                st.error("Unable to fetch weather data.")  
+# ============================================================
+# PROFESSIONAL PDF REPORT
+# ============================================================
+
+        pdf_file = generate_pdf(
+            filename="PlantDoctor_Report.pdf",
+            username=st.session_state.get("username", "Guest"),
+            plant=plant,
+            disease=disease_name,
+            confidence=confidence,
+            prediction_time=prediction_time,
+            info=info,
+            severity=severity,
+            weather=weather
+        )
+
+        with open(pdf_file, "rb") as pdf:
+
+            st.download_button(
+                label="📄 Download Professional PDF Report",
+                data=pdf,
+                file_name=f"{plant}_{disease_name}_Report.pdf",
+                mime="application/pdf"
+            )                        
 
 # ============================================================
 # DISCLAIMER
 # ============================================================
 
-st.markdown("---")
+st.divider()
 
 st.info(
 """
 ### ⚠ Disclaimer
 
-This prediction is generated using a Deep Learning model
-trained on the PlantVillage Dataset.
+This prediction is generated using a Deep Learning model trained on the PlantVillage dataset.
 
-Results are intended for educational and research purposes.
-
-For severe crop infections,
-consult a professional agricultural expert.
+Always consult an agricultural expert before taking critical crop management decisions.
 """
 )
 
@@ -604,6 +587,7 @@ st.markdown(
 Deep Learning Powered Plant Disease Detection
 
 TensorFlow • MobileNetV2 • Streamlit
+
 
 Version 2.0
 
