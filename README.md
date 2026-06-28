@@ -152,24 +152,13 @@ streamlit run app.py
 
 ---
 
-## 📸 Screenshots
-
-Add screenshots of:
-
-- Home Page
-- Prediction Result
-- Dashboard
-- AI Assistant
-- Weather Section
-- PDF Report
-
----
 
 ## 👩‍💻 Developer
 
 **Monisha Gupta**
 
-B.Tech Computer Science Engineering
+B.Tech Computer Science Engineering 
+Second-Year Undergraduate Student
 
 ---
 
@@ -186,4 +175,4 @@ This project was developed for educational and internship purposes.
 - Open-Meteo API
 - PlantVillage Dataset
 - Kaggle
-- 
+
