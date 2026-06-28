@@ -165,8 +165,12 @@ Add screenshots of:
 - Dashboard
   <img width="2940" height="1670" alt="image" src="https://github.com/user-attachments/assets/6c403582-afda-45c3-a783-05e4080076b1" />
 
+  <img width="2940" height="1678" alt="image" src="https://github.com/user-attachments/assets/c8e9b604-5a43-4c64-a394-9f329dd99b0a" />
+
 - AI Assistant
   <img width="2934" height="1664" alt="image" src="https://github.com/user-attachments/assets/04957aa0-b8a9-44dd-8023-635cb2a0e1a7" />
+  
+  <img width="2940" height="1686" alt="image" src="https://github.com/user-attachments/assets/40e65d10-59d7-493a-b5d2-6dec235c4e14" />
 
 - Weather Section
   <img width="2940" height="1662" alt="image" src="https://github.com/user-attachments/assets/12f7e8b3-0e69-4836-82dd-f99a05f1eef2" />
