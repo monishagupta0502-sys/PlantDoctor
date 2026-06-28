@@ -152,6 +152,30 @@ streamlit run app.py
 
 ---
 
+## 📸 Screenshots
+
+Add screenshots of:
+
+- Home Page
+  <img width="2928" height="1658" alt="image" src="https://github.com/user-attachments/assets/c2f32578-077f-407e-a198-f241d5de5b37" />
+
+- Prediction Result
+  <img width="2940" height="1678" alt="image" src="https://github.com/user-attachments/assets/04e82eaa-ec9b-46e3-9fd4-ba92c098e44f" />
+
+- Dashboard
+  <img width="2940" height="1670" alt="image" src="https://github.com/user-attachments/assets/6c403582-afda-45c3-a783-05e4080076b1" />
+
+- AI Assistant
+  <img width="2934" height="1664" alt="image" src="https://github.com/user-attachments/assets/04957aa0-b8a9-44dd-8023-635cb2a0e1a7" />
+
+- Weather Section
+  <img width="2940" height="1662" alt="image" src="https://github.com/user-attachments/assets/12f7e8b3-0e69-4836-82dd-f99a05f1eef2" />
+
+- PDF Report
+  <img width="1060" height="1466" alt="image" src="https://github.com/user-attachments/assets/9d367658-8e7c-4ff5-9f69-7a12b9edec91" />
+
+
+---
 
 ## 👩‍💻 Developer
 
