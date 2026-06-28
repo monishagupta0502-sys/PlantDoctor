@@ -162,6 +162,11 @@ Add screenshots of:
 - Prediction Result
   <img width="2940" height="1678" alt="image" src="https://github.com/user-attachments/assets/04e82eaa-ec9b-46e3-9fd4-ba92c098e44f" />
 
+  <img width="2938" height="1672" alt="image" src="https://github.com/user-attachments/assets/1cdcc285-0d21-4b13-8fa8-8aef30446896" />
+
+ <img width="2940" height="1668" alt="image" src="https://github.com/user-attachments/assets/a5d50b28-0ef1-4442-9144-b855e803ab61" />
+
+
 - Dashboard
   <img width="2940" height="1670" alt="image" src="https://github.com/user-attachments/assets/6c403582-afda-45c3-a783-05e4080076b1" />
 
