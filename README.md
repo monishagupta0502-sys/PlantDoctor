@@ -209,3 +209,8 @@ This project was developed for educational and internship purposes.
 - PlantVillage Dataset
 - Kaggle
 
+## 🔗 Project Links
+
+🌐 **Live Application:** https://plantdoctor-kazldlecm3frjpqwtacncx.streamlit.app/
+
+💻 **GitHub Repository:** https://github.com/monishagupta0502-sys/PlantDoctor
